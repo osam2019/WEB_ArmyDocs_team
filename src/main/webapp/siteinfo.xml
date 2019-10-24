@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+	<comment>common_code</comment>    
+	
+    
+	<!-- JDBC드라이버클래스이름 -->     
+	<entry key="jdbc.driverClassName">com.mysql.jdbc.Driver</entry>
+	<!-- DB접속서버주소 -->
+	<entry key="jdbc.url">jdbc:mysql://localhost:3306/amrydocs</entry>
+	<!-- DB접속아이디 -->  
+	<entry key="jdbc.username">root</entry>     
+	<!-- DB접속비밀번호 -->      
+	<entry key="jdbc.password">root</entry>     
+	<!-- 자동커밋여부 -->  
+	<entry key="jdbc.defaultAutoCommit">false</entry>  
+	<!-- SQL Mapper 파일 위치 -->   
+	<entry key="sqlmap.location">/WEB-INF/spring/mybatis-config.xml</entry>
+	
+
+	
+</properties>

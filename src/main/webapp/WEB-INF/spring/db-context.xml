@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" 
+	xmlns:util="http://www.springframework.org/schema/util" 
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	
+	<!-- ========================= RESOURCE DEFINITIONS ========================= -->
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="/WEB-INF/spring/mybatis-config.xml"/>
+		<!--<property name="configurationProperties" ref="siteinfo"></property> ##########-->
+	</bean>
+	
+	<bean id="dataSourceSpied" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+		<property name="url" value="jdbc:mysql://localhost:3306/armydocs?useUnicode=true&amp;characterEncoding=utf8"/>
+		<property name="username" value="root"/>
+		<property name="password" value="root"/>
+		<property name="defaultAutoCommit" value="false"/>
+	</bean>
+	
+    <bean id="dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+		<constructor-arg ref="dataSourceSpied"/>
+		<property name="logFormatter">
+			<bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
+				<property name="loggingType" value="MULTI_LINE" />
+			</bean>
+		</property>
+	</bean>
+	
+	 
+	<!-- 트랜잭션 AOP 설정 -->
+	<aop:config proxy-target-class="true">
+		<aop:pointcut id="txAdvisePointCut" expression="execution(public * com.armydocs..*Service.*(..))"/>	
+		<aop:advisor id="transactionAdvisor" pointcut-ref="txAdvisePointCut" advice-ref="txAdvice"/>
+	</aop:config>
+ 
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="find*" read-only="true" />
+			<tx:method name="view*" read-only="true" />
+			<tx:method name="has*" read-only="true" />
+			
+			<tx:method name="register*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="finish*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="set*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="send*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="publish*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="refund*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="init*" propagation="REQUIRED" rollback-for="Exception" />
+			
+			<tx:method name="update*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="insert*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="delete*" propagation="REQUIRED" rollback-for="Exception" />	 
+			<tx:method name="cancel*" propagation="REQUIRED" rollback-for="Exception" />
+			
+		</tx:attributes>
+	</tx:advice>
+
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+</beans>

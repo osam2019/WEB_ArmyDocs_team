@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd"> 
+<mapper namespace="basic">	
+	
+	
+	<update id="signUser" parameterType="java.lang.Integer">
+		update am_user_info set signFlag = true where idx = #{idx}
+	</update>
+	
+	<select id="getNotSignedUsers" resultType="com.armydocs.basic.vo.UserVo">
+		select * 
+		from am_user_info 
+		where signFlag = false
+	</select>
+	
+	<delete id="deleteSurveyByIdx" parameterType="java.lang.Integer">
+		delete from am_survey_info where idx = #{idx}
+	</delete>
+	
+	<!-- 회원 프로필 사진 업데이트 -->
+	<update id="updateUserProfile" parameterType="java.util.Map">
+		update am_user_info 
+		set profile = #{profile}
+		where idx = #{idx}
+	</update> 
+	
+	<!-- 설문답변 통계목록 가져오기 -->
+	<select id="getSurveyStatistics" parameterType="java.lang.Integer" resultType="java.util.Map">
+		select 
+			
+			a.idx as idx,
+			a.note as q,
+			b.responseNote as a,
+			count(*) as aSum
+			
+		from 
+			am_survey_items as a right outer join am_survey_answer as b
+		on 
+			a.idx = b.itemsIdx
+		where
+			a.surveyIdx = #{surveyIdx}
+		group by
+			b.itemsIdx, b.responseNote
+		order by
+			corder asc 
+	</select>
+	
+	
+	
+	<!-- 답변 등록 -->
+	<insert id="insertAnswer" parameterType="com.armydocs.basic.vo.SurveyAnswer">
+		insert into am_survey_answer 
+			(surveyIdx, itemsIdx, userIdx, responseNote, regdate)
+		values
+			(#{surveyIdx},#{itemsIdx},#{userIdx},#{responseNote},#{regdate})
+	</insert>
+	
+	
+	<select id="getProgressSurveys" resultType="com.armydocs.basic.vo.SurveyVo">
+		select 
+			idx,
+			title,
+			note,
+			regdate,
+			startdate,
+			enddate,
+			userIdx,
+			name,
+			coverImg,
+			bTarget,
+			TO_DAYS(enddate) - TO_DAYS(now()) as dDay,
+			(select station from am_user_info where idx = userIdx) as station,
+			if(now() between a.startdate and a.enddate, true, false) as progressFlag
+			
+		from 
+			am_survey_info as a
+
+		order by 
+			progressFlag desc, regdate desc
+	</select>
+	
+	<select id="getSurveys" parameterType="java.lang.Integer" resultType="com.armydocs.basic.vo.SurveyVo">
+		select 
+			* 
+		from am_survey_info where userIdx = #{userIdx} order by regdate desc
+	</select>
+	
+	<!-- 설묵 항목 로드 -->
+	<select id="getItems" parameterType="java.lang.Integer" resultType="com.armydocs.basic.vo.SurveyItem">
+		select * from am_survey_items where surveyIdx = #{surveyIdx} order by corder asc
+	</select>
+	
+	<!-- 설문항목 제거 -->
+	<delete id="deleteItemBySurveyIdx" parameterType="java.util.Map">
+		delete from am_survey_items where surveyIdx = #{surveyIdx} and regdate != #{regdate}
+	</delete>
+	
+	<!-- 설문항목 등록 -->
+	<insert id="insertItem" parameterType="com.armydocs.basic.vo.SurveyItem">
+		insert into am_survey_items 
+			(surveyIdx, note, corder, responseNote, qtype, regdate)
+		values
+			(#{surveyIdx}, #{note}, #{corder}, #{responseNote}, #{qtype}, #{regdate})
+	</insert>
+	
+	<!-- 설문 정보 조회 -->
+	<select id="getSurveyInfoByIdx" parameterType="java.lang.Integer" resultType="com.armydocs.basic.vo.SurveyVo">
+		select 
+			idx, title, note, regdate, startdate, enddate, userIdx, name, coverImg, bTarget,
+			(select count(*) from am_survey_items where surveyidx = am_survey_info.idx) as itemCount
+		from 
+			am_survey_info 
+		where 
+			idx = #{idx}
+	</select>
+	
+	<!-- 설문 정보 조회 -->
+	<select id="getInsertedSurveyIdx" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select idx from am_survey_info where title = #{title} order by idx desc limit 1
+	</select>
+	
+	
+	<!-- 설문 수정 -->
+	<insert id="updateSurvey" parameterType="com.armydocs.basic.vo.SurveyVo">
+		update am_survey_info
+		set
+			title = #{title},
+			note = #{note},
+			startdate = #{startdate},
+			enddate = #{enddate},
+			coverImg = #{coverImg},
+			bTarget = #{bTarget}
+		where 
+			idx = #{idx}	
+	</insert>
+	
+	<!-- 설문 등록 -->
+	<insert id="insertSurvey" parameterType="com.armydocs.basic.vo.SurveyVo">
+		insert into am_survey_info
+			(title, note, regdate, startdate, enddate, userIdx, name, coverImg, bTarget)
+		values
+			(#{title}, #{note}, now(), #{startdate}, #{enddate}, #{userIdx}, #{name}, #{coverImg}, #{bTarget})
+	</insert>
+	
+	<!-- 회원 제거 -->
+	<delete id="deleteUserByIdx" parameterType="java.lang.Integer">
+		delete from am_user_info where idx = #{idx}
+	</delete>
+	
+    <!-- 회원 조회 -->
+	<select id="getUserByIdx" parameterType="java.lang.Integer" resultType="com.armydocs.basic.vo.UserVo">
+		select * from am_user_info where idx = #{idx};
+	</select>
+    
+    <!-- 회원 조회 -->
+	<select id="getUserById" parameterType="java.lang.String" resultType="com.armydocs.basic.vo.UserVo">
+		select * from am_user_info where id = #{id};
+	</select>
+	
+    <!-- 회원 등록 -->
+    <insert id="insertUser" parameterType="com.armydocs.basic.vo.UserVo">
+        insert into am_user_info 
+            (id, password, name, email, phonenm, recruitDate, signDate, station, atype, atype2)
+        values
+            (#{id}, #{password}, #{name}, #{email}, #{phonenm}, #{recruitDate}, now(), #{station}, #{atype}, #{atype2})
+    </insert>
+    
+    <!-- 비밀번호 수정 -->
+    <update id="updatePassword" parameterType="java.util.Map">
+        update am_user_info
+        set
+            password = #{password}
+        where 
+            idx = #{idx}
+    </update>
+    
+    <!-- 회원정보 수정 -->
+    <update id="updateUser" parameterType="com.armydocs.basic.vo.UserVo">
+        update am_user_info
+        set
+            name = #{name},
+            email = #{email},
+            phonenm = #{phonenm},
+            recruitDate = #{recruitDate},
+            station = #{station},
+            atype = #{atype},
+            atype2 = #{atype2}
+        where 
+            idx = #{idx}
+    </update>
+    
+
+</mapper>
