@@ -122,6 +122,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 * Junyoung Choi (cupjoo@naver.com)
 * Heesung Jung (qlcskfgml78@naver.com)
 * Jisoo Lee (jisoolee1997@naver.com)
+* Eunjin Kim (dmswls315@naver.com)
 
 ## 알려진 버그 (Known Issues)
 
